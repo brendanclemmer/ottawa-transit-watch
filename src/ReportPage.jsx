@@ -9,7 +9,7 @@ function ReportPage() {
   const [description, setDescription] = useState('')
   const [submitted, setSubmitted] = useState(false)
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
   event.preventDefault()
 
   const newReport = {
@@ -18,13 +18,20 @@ function ReportPage() {
     direction,
     location,
     description,
-    verificationLevel: 'reported',
-    moderationStatus: 'pending',
-    confirmations: 0,
-    createdAt: new Date().toISOString(),
   }
 
-  console.log(newReport)
+  const response = await fetch('/api/reports', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(newReport),
+  })
+
+  if (!response.ok) {
+    console.error('Failed to submit report')
+    return
+  }
 
   setSubmitted(true)
 }
