@@ -1,47 +1,33 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 function LiveReportsPage() {
-  const reports = [
-  {
-    id: 1,
-    location: 'Route 88',
-    type: 'Service Disruption',
-    description: 'Bus reported stationary near Hurdman for an extended period.',
-    time: '4 min ago',
-    confirmations: 1,
-    verificationLevel: 'reported',
-  },
-  {
-    id: 2,
-    location: 'Rideau Station',
-    type: 'Accessibility / Equipment',
-    description: 'Elevator reported unavailable.',
-    time: '11 min ago',
-    confirmations: 4,
-    verificationLevel: 'corroborated',
-  },
-  {
-    id: 3,
-    location: 'Line 1',
-    type: 'Service Disruption',
-    description: 'Train stopped longer than expected near uOttawa.',
-    time: '16 min ago',
-    confirmations: 3,
-    verificationLevel: 'official',
-  },
-]
+  const [reports, setReports] = useState([])
+  const [loading, setLoading] = useState(true)
 
-function getVerificationLabel(level) {
-  if (level === 'corroborated') {
-    return 'Community corroborated'
+  useEffect(() => {
+    async function loadReports() {
+      const response = await fetch('/api/reports')
+      const data = await response.json()
+
+      setReports(data)
+      setLoading(false)
+    }
+
+    loadReports()
+  }, [])
+
+  function getVerificationLabel(level) {
+    if (level === 'corroborated') {
+      return 'Community corroborated'
+    }
+
+    if (level === 'official') {
+      return 'Official'
+    }
+
+    return 'Community reported'
   }
-
-  if (level === 'official') {
-    return 'Official'
-  }
-
-  return 'Community reported'
-}
 
   return (
     <main className="app-shell">
@@ -51,43 +37,57 @@ function getVerificationLabel(level) {
         <h1>Live Transit Reports</h1>
 
         <p className="intro">
-          Recent rider-reported transit issues around Ottawa.
+          Recent approved transit incidents reported around Ottawa.
         </p>
       </section>
 
-      <section className="live-feed" aria-label="Live transit reports">
-        {reports.map((report) => (
-          <article className="report-card" key={report.id}>
-            <div className="report-card-header">
-              <span className="report-location">
-                {report.location}
-              </span>
+      {loading ? (
+        <p>Loading reports...</p>
+      ) : reports.length === 0 ? (
+        <p>No active reports right now.</p>
+      ) : (
+        <section className="live-feed" aria-label="Live transit reports">
+          {reports.map((report) => (
+            <article className="report-card" key={report.id}>
+              <div className="report-card-header">
+                <span className="report-location">
+                  {report.route}
+                </span>
 
-              <span className="report-time">
-                {report.time}
-              </span>
-            </div>
+                <span className="report-time">
+                  {report.created_at}
+                </span>
+              </div>
 
-            <p className="report-type">
-              {report.type}
-            </p>
+              <p className="report-type">
+                {report.issue_type}
+              </p>
 
-            <p className="report-description">
-              {report.description}
-            </p>
+              <p className="report-description">
+                {report.description}
+              </p>
 
-            <div className="report-meta">
-              <span>
-                {report.confirmations} confirmations
-              </span>
+              {report.location && (
+                <p className="report-type">
+                  {report.location}
+                </p>
+              )}
 
-              <span className={`verification-badge ${report.verificationLevel}`}>
-              {getVerificationLabel(report.verificationLevel)}
-              </span>
-            </div>
-          </article>
-        ))}
-      </section>
+              <div className="report-meta">
+                <span>
+                  {report.confirmations} confirmations
+                </span>
+
+                <span
+                  className={`verification-badge ${report.verification_level}`}
+                >
+                  {getVerificationLabel(report.verification_level)}
+                </span>
+              </div>
+            </article>
+          ))}
+        </section>
+      )}
 
       <Link className="back-link live-back-link" to="/">
         Back to Home

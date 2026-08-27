@@ -331,3 +331,17 @@ h1 {
   font-weight: 800;
   color: #cbd5e1;
 }
+
+.admin-section {
+  margin-top: 2.5rem;
+}
+
+.admin-section h2,
+main h2 {
+  margin-bottom: 1rem;
+}
+
+.admin-button.resolve {
+  background: #1e3a5f;
+  color: #dbeafe;
+}
